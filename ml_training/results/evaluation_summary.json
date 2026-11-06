@@ -1,0 +1,60 @@
+{
+  "accuracy": 0.9611111111111111,
+  "target_accuracy": 0.8,
+  "passed": true,
+  "confusion_matrix": [
+    [
+      60,
+      0,
+      0
+    ],
+    [
+      0,
+      57,
+      3
+    ],
+    [
+      0,
+      4,
+      56
+    ]
+  ],
+  "classification_report": {
+    "Organic_Waste": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 60.0
+    },
+    "Paper_Waste": {
+      "precision": 0.9344262295081968,
+      "recall": 0.95,
+      "f1-score": 0.9421487603305785,
+      "support": 60.0
+    },
+    "Plastic_Waste": {
+      "precision": 0.9491525423728814,
+      "recall": 0.9333333333333333,
+      "f1-score": 0.9411764705882353,
+      "support": 60.0
+    },
+    "accuracy": 0.9611111111111111,
+    "macro avg": {
+      "precision": 0.9611929239603594,
+      "recall": 0.9611111111111111,
+      "f1-score": 0.9611084103062714,
+      "support": 180.0
+    },
+    "weighted avg": {
+      "precision": 0.9611929239603594,
+      "recall": 0.9611111111111111,
+      "f1-score": 0.9611084103062714,
+      "support": 180.0
+    }
+  },
+  "class_names": [
+    "Organic_Waste",
+    "Paper_Waste",
+    "Plastic_Waste"
+  ]
+}

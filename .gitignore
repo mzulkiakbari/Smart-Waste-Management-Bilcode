@@ -1,0 +1,126 @@
+# ==========================================
+# Environment & Secrets (Never commit credentials)
+# ==========================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# ==========================================
+# IDE & System Files
+# ==========================================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# Logs & Temp
+# ==========================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.temp/
+.tmp/
+
+# ==========================================
+# Node / Frontend (Web & General JS)
+# ==========================================
+node_modules/
+**/node_modules/
+npm-debug.log
+.next/
+out/
+dist/
+build/
+coverage/
+.turbo/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
+# ==========================================
+# Backend (PHP / Laravel)
+# ==========================================
+backend/vendor/
+backend/node_modules/
+backend/public/storage
+backend/public/hot
+backend/storage/*.key
+backend/storage/app/*
+!backend/storage/app/.gitignore
+backend/storage/framework/cache/*
+!backend/storage/framework/cache/.gitignore
+backend/storage/framework/sessions/*
+!backend/storage/framework/sessions/.gitignore
+backend/storage/framework/testing/*
+!backend/storage/framework/testing/.gitignore
+backend/storage/framework/views/*
+!backend/storage/framework/views/.gitignore
+backend/storage/logs/*
+!backend/storage/logs/.gitignore
+backend/.phpunit.result.cache
+
+# ==========================================
+# Python / Machine Learning (ml_service, ml_training)
+# ==========================================
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Dataset & Model Binaries / Checkpoints (Large files)
+*.pth
+*.pt
+*.onnx
+*.h5
+*.pkl
+ml_training/dataset/
+ml_training/runs/
+ml_training/checkpoints/
+
+# ==========================================
+# Mobile (Flutter / Dart / Android / iOS)
+# ==========================================
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/.pub-cache/
+mobile/.pub/
+mobile/build/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/release/
+mobile/android/app/debug/
+mobile/ios/Flutter/Generated.xcconfig
+mobile/ios/Flutter/flutter_export_environment.sh
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/Flutter.podspec
+
