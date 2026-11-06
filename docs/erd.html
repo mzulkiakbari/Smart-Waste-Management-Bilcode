@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERD - Smart Waste Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            margin: 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        h1 {
+            color: #38bdf8;
+            margin: 0 0 10px 0;
+            font-size: 26px;
+        }
+        p {
+            color: #94a3b8;
+            margin: 0;
+            font-size: 15px;
+        }
+        .container {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+            border: 1px solid #334155;
+            max-width: 95%;
+            overflow-x: auto;
+        }
+        .btn-group {
+            margin-top: 25px;
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            background: #0369a1;
+            transform: translateY(-2px);
+        }
+        button.secondary {
+            background: #475569;
+        }
+        button.secondary:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Entity Relationship Diagram (ERD)</h1>
+        <p>Smart Waste Management System Database Schema</p>
+    </div>
+
+    <div class="container" id="erd-container">
+        <div class="mermaid">
+erDiagram
+    USERS ||--o{ REPORTS : "makes / submits (1:N)"
+    USERS ||--o{ PERSONAL_ACCESS_TOKENS : "has tokens (1:N)"
+
+    USERS {
+        bigint id PK "Primary Key, Auto Increment"
+        string name "Nama Pengguna"
+        string email UK "Email Pengguna (Unique)"
+        string role "Role: 'user' / 'admin'"
+        string phone "Nomor Telepon / WA (Nullable)"
+        string password "Hashed Password"
+        timestamp email_verified_at "Nullable"
+        string remember_token "Nullable"
+        timestamp created_at "Waktu Akun Dibuat"
+        timestamp updated_at "Waktu Akun Diubah"
+    }
+
+    REPORTS {
+        bigint id PK "Primary Key, Auto Increment"
+        bigint user_id FK "Foreign Key ke USERS.id"
+        string title "Judul Laporan"
+        text description "Deskripsi Sampah (Nullable)"
+        text image_url "Path / URL Foto Sampah"
+        decimal latitude "Koordinat GPS Latitude (10,7)"
+        decimal longitude "Koordinat GPS Longitude (10,7)"
+        string address_note "Nama Lokasi / Patokan Jalan"
+        string waste_category "Kategori Sampah (Hasil AI / Manual)"
+        float ai_confidence "Tingkat Akurasi AI (0.0 - 1.0)"
+        enum status "'pending', 'in_progress', 'completed', 'rejected'"
+        text admin_notes "Catatan Tindak Lanjut Admin"
+        timestamp handled_at "Waktu Laporan Selesai Ditangani"
+        timestamp created_at "Waktu Laporan Masuk"
+        timestamp updated_at "Waktu Laporan Diperbarui"
+    }
+
+    PERSONAL_ACCESS_TOKENS {
+        bigint id PK "Primary Key, Auto Increment"
+        string tokenable_type "Model Terkait (App\\Models\\User)"
+        bigint tokenable_id "ID Model (User ID)"
+        string name "Nama Token (misal: 'mobile-app')"
+        string token UK "Token Hash (Unique)"
+        text abilities "Hak Akses Token"
+        timestamp last_used_at "Waktu Terakhir Dipakai"
+        timestamp expires_at "Waktu Kedaluwarsa Token"
+        timestamp created_at "Waktu Token Dibuat"
+        timestamp updated_at "Waktu Token Diperbarui"
+    }
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button onclick="downloadPNG()">Download Gambar ERD (PNG)</button>
+        <button class="secondary" onclick="window.print()">Cetak / Simpan PDF</button>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#0284c7',
+                primaryTextColor: '#f8fafc',
+                primaryBorderColor: '#38bdf8',
+                lineColor: '#38bdf8',
+                secondaryColor: '#334155',
+                tertiaryColor: '#1e293b'
+            }
+        });
+
+        function downloadPNG() {
+            const container = document.getElementById('erd-container');
+            html2canvas(container, {
+                backgroundColor: '#1e293b',
+                scale: 2
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'ERD-Smart-Waste-Management.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
+
