@@ -1,0 +1,506 @@
+openapi: 3.0.3
+info:
+  title: Smart Waste Management System API
+  description: API Gateway untuk Smart Waste Management System terintegrasi dengan Machine Learning (FastAPI) dan Supabase Storage.
+  version: 1.0.0
+servers:
+  - url: /api
+    description: Base API Endpoint
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Registrasi pengguna baru
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - password_confirmation
+              properties:
+                name:
+                  type: string
+                  example: Budi Santoso
+                email:
+                  type: string
+                  format: email
+                  example: budi@example.com
+                password:
+                  type: string
+                  format: password
+                  example: password123
+                password_confirmation:
+                  type: string
+                  format: password
+                  example: password123
+                phone:
+                  type: string
+                  example: "081234567890"
+      responses:
+        '201':
+          description: Registrasi berhasil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Registrasi berhasil
+                  token:
+                    type: string
+                    example: 1|abcde12345...
+                  user:
+                    $ref: '#/components/schemas/User'
+        '422':
+          description: Validasi gagal
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login pengguna / admin
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: admin@waste.local
+                password:
+                  type: string
+                  format: password
+                  example: password
+      responses:
+        '200':
+          description: Login berhasil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login berhasil
+                  token:
+                    type: string
+                    example: 2|qwerty67890...
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Email atau kata sandi tidak valid
+
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Mendapatkan informasi profil pengguna yang sedang login
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profil berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Belum terautentikasi
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout dan cabut akses token
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Berhasil logout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Berhasil logout
+
+  /reports:
+    get:
+      tags:
+        - Reports
+      summary: Mengambil daftar laporan sampah (dengan filter dan pagination)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, in_progress, completed, rejected]
+        - name: waste_category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [Organic Waste, Plastic Waste, Paper Waste]
+        - name: search
+          in: query
+          required: false
+          description: Pencarian teks pada judul dan catatan alamat
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Daftar laporan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WasteReport'
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      total:
+                        type: integer
+    post:
+      tags:
+        - Reports
+      summary: Membuat laporan sampah baru (dilengkapi prediksi AI otomatis)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - title
+                - image
+                - latitude
+                - longitude
+              properties:
+                title:
+                  type: string
+                  example: Tumpukan sampah plastik di selokan
+                description:
+                  type: string
+                  example: Banyak botol plastik menyumbat aliran air.
+                image:
+                  type: string
+                  format: binary
+                  description: File foto sampah (jpg, jpeg, png)
+                latitude:
+                  type: number
+                  format: float
+                  example: -6.2088
+                longitude:
+                  type: number
+                  format: float
+                  example: 106.8456
+                address_note:
+                  type: string
+                  example: Jl. Sudirman No. 45
+      responses:
+        '201':
+          description: Laporan berhasil dibuat dan diverifikasi oleh AI
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Laporan berhasil dibuat dan diverifikasi oleh AI
+                  data:
+                    $ref: '#/components/schemas/WasteReport'
+
+  /reports/my:
+    get:
+      tags:
+        - Reports
+      summary: Mengambil riwayat laporan pengguna yang sedang login
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar laporan pengguna
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WasteReport'
+
+  /reports/{id}:
+    get:
+      tags:
+        - Reports
+      summary: Detail spesifik laporan sampah
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail laporan ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WasteReport'
+        '404':
+          description: Laporan tidak ditemukan
+    delete:
+      tags:
+        - Reports
+      summary: Menghapus laporan sampah
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Laporan berhasil dihapus
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Laporan berhasil dihapus
+
+  /reports/{id}/status:
+    patch:
+      tags:
+        - Reports
+      summary: Update status laporan & catatan verifikasi (Admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, in_progress, completed, rejected]
+                  example: in_progress
+                admin_notes:
+                  type: string
+                  example: Petugas kebersihan sektor 2 telah diberangkatkan ke lokasi.
+      responses:
+        '200':
+          description: Status laporan berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Status laporan berhasil diperbarui
+                  data:
+                    $ref: '#/components/schemas/WasteReport'
+
+  /dashboard/statistics:
+    get:
+      tags:
+        - Dashboard
+      summary: Statistik ringkasan untuk dashboard admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Data statistik laporan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_reports:
+                    type: integer
+                    example: 128
+                  by_status:
+                    type: object
+                    properties:
+                      pending:
+                        type: integer
+                        example: 24
+                      in_progress:
+                        type: integer
+                        example: 18
+                      completed:
+                        type: integer
+                        example: 82
+                      rejected:
+                        type: integer
+                        example: 4
+                  by_category:
+                    type: object
+                    properties:
+                      Organic Waste:
+                        type: integer
+                        example: 45
+                      Plastic Waste:
+                        type: integer
+                        example: 62
+                      Paper Waste:
+                        type: integer
+                        example: 21
+                  monthly_trend:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        month:
+                          type: string
+                          example: Jun
+                        count:
+                          type: integer
+                          example: 15
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Administrator
+        email:
+          type: string
+          format: email
+          example: admin@waste.local
+        role:
+          type: string
+          enum: [admin, user]
+          example: admin
+        phone:
+          type: string
+          nullable: true
+          example: "081234567890"
+
+    WasteReport:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        user_id:
+          type: integer
+          example: 2
+        title:
+          type: string
+          example: Tumpukan sampah plastik di selokan
+        description:
+          type: string
+          nullable: true
+          example: Banyak botol plastik menyumbat aliran air.
+        image_url:
+          type: string
+          example: https://xyz.supabase.co/storage/v1/object/public/waste-reports/reports/2/1730480000_photo.jpg
+        latitude:
+          type: number
+          format: float
+          example: -6.2088
+        longitude:
+          type: number
+          format: float
+          example: 106.8456
+        address_note:
+          type: string
+          nullable: true
+          example: Jl. Sudirman No. 45
+        waste_category:
+          type: string
+          example: Plastic Waste
+        ai_confidence:
+          type: number
+          format: float
+          example: 0.9425
+        status:
+          type: string
+          enum: [pending, in_progress, completed, rejected]
+          example: pending
+        admin_notes:
+          type: string
+          nullable: true
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-11-01T23:20:00.000000Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-11-01T23:20:00.000000Z"
+        user:
+          $ref: '#/components/schemas/User'
+
