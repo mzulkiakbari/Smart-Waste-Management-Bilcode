@@ -21,9 +21,16 @@ subprojects {
 }
 
 subprojects {
-    project.plugins.withId("com.android.library") {
-        project.extensions.configure<com.android.build.gradle.LibraryExtension> {
-            compileSdk = 36
+    val configureCompileSdk: (Project) -> Unit = { proj ->
+        proj.extensions.findByType(com.android.build.gradle.BaseExtension::class.java)?.apply {
+            compileSdkVersion(36)
+        }
+    }
+    if (state.executed) {
+        configureCompileSdk(this)
+    } else {
+        afterEvaluate {
+            configureCompileSdk(this)
         }
     }
 }

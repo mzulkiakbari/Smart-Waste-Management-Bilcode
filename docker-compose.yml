@@ -1,0 +1,31 @@
+services:
+  # 1. Backend Laravel (Port lokal 8081 -> 8000)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smart_waste_backend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8081:8000"
+    volumes:
+      - ./backend/.env:/var/www/.env
+      - ./backend/storage:/var/www/storage
+    networks:
+      - smart_waste_net
+
+  # 2. ML Service FastAPI (Port lokal 8082 -> 8000)
+  ml_service:
+    build:
+      context: ./ml_service
+      dockerfile: Dockerfile
+    container_name: smart_waste_ml
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8082:8000"
+    networks:
+      - smart_waste_net
+
+networks:
+  smart_waste_net:
+    driver: bridge
